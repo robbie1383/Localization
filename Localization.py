@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Localization:
 
     def __init__(self, delta_t, state):
@@ -12,7 +13,6 @@ class Localization:
         self.Q = np.dot(np.identity(3), 0.1)
 
     def kalmanFilter(self, action, observation):
-
         # Prediction
         B = [[self.delta_t * np.cos(self.state[2]), 0], [self.delta_t * np.sin(self.state[2]), 2], [0, self.delta_t]]
         statePrediction = np.matmul(self.A, self.state) + np.matmul(B, action)
