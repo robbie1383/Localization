@@ -29,7 +29,7 @@ class Localization:
         self.state = newState
         self.covariance = newCovariance
 
-    def getObservationPose(self, x, y, theta,actionn ):
+    def getObservationPose(self, x, y, theta,actionn):
         xt=np.matmul(self.A, [x,y,theta])+np.matmul(self.B, actionn)+ self.R
         z=np.matmul(self.C, xt)+self.Q
         return z
