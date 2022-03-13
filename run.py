@@ -99,9 +99,10 @@ class Simulation:
         velocities = self.robot.move(movement, self.delta_t)
 
         # Update localization
-        z = self.localization.getObservationPose(self.robot.x, self.robot.y, self.robot.theta)
-        print(self.robot.x, self.robot.y)
-        # self.localization.kalmanFilter(velocities[0:2], z)
+        z = self.localization.getObservationPose(self.robot.x, self.robot.y, self.robot.theta,velocities[0:2])
+        print("not z",self.robot.x, self.robot.y, self.robot.theta)
+        print("z",z)
+        #self.localization.kalmanFilter(velocities[0:2], z)
 
         return velocities
 

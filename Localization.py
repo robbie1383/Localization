@@ -1,5 +1,5 @@
 import numpy as np
-
+import math
 
 class Localization:
 
@@ -11,6 +11,7 @@ class Localization:
         self.C = np.identity(3)
         self.R = np.dot(np.identity(3), 0.1)
         self.Q = np.dot(np.identity(3), 0.1)
+        self.B = [[self.delta_t * np.cos(self.state[2]), 0], [self.delta_t * np.sin(self.state[2]), 2], [0, self.delta_t]]
 
     def kalmanFilter(self, action, observation):
         # Prediction
@@ -28,6 +29,8 @@ class Localization:
         self.state = newState
         self.covariance = newCovariance
 
-    def getObservationPose(self, x, y, theta):
-        return [x, y, theta]
+    def getObservationPose(self, x, y, theta,actionn ):
+        xt=np.matmul(self.A, [x,y,theta])+np.matmul(self.B, actionn)+ self.R
+        z=np.matmul(self.C, xt)+self.Q
+        return z
         # slide 20 in "19 ARS - Localization with Kalman Filter.pdf"
