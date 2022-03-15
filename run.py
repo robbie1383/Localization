@@ -77,6 +77,8 @@ class Simulation:
         theta = "θ = " + str(np.round(velocities[2] % 360, 2)) + "°"
         self.screen.blit(self.font.render(theta, 105, BLACK), (WIDTH + 10, HEIGHT / 2 - 205))
 
+        # Visualization ellipse and predicted tracks
+        self.visualization_predict()
         # Display localization approximation
         pygame.display.flip()
 
@@ -99,12 +101,30 @@ class Simulation:
         velocities = self.robot.move(movement, self.delta_t)
 
         # Update localization
-        z = self.localization.getObservationPose(self.robot.x, self.robot.y, self.robot.theta,velocities[0:2])
-        print("Real values",self.robot.x, self.robot.y, self.robot.theta)
-        print("z",z)
-        #self.localization.kalmanFilter(velocities[0:2], z)
-
+        z = self.localization.getObservationPose(self.robot.x, self.robot.y, self.robot.theta, velocities[0:2])
+        print("Real values", self.robot.x, self.robot.y, self.robot.theta)
+        print("z", z)
+        self.localization.kalmanFilter(velocities[0:2], z)
         return velocities
+
+    def visualization_predict(self):
+        # https://cookierobotics.com/007/
+        ellipse, location = self.localization.get_ellipse()
+        predict_track = self.localization.predict_track
+        width, height, angle = ellipse
+        x, y = location
+        # init an transparent surface
+        surface = pygame.Surface((100, 100), pygame.SRCALPHA)
+        # draw ellipse on transparent surface,make sure the ellipse locate in the center of the surface
+        pygame.draw.ellipse(surface, GREEN, (50 - width / 2, 50 - height / 2, width, height), 3)
+        # rotate the  ellipse by rotating the whole surface
+        surface2 = pygame.transform.rotate(surface, angle)
+        # get the ellipse location on surface
+        rcx, rcy = surface2.get_rect().center
+        # show ellipse and adjust the location to the track
+        self.screen.blit(surface2, (x - rcx, y - rcy))
+        if len(predict_track) > 1:
+            pygame.draw.aalines(self.screen, DARKGRAY, False, predict_track, 50)
 
     def stop(self):
         self.running = False
