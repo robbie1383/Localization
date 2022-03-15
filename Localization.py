@@ -1,6 +1,7 @@
 import numpy as np
 import math
-
+from sympy.solvers import solve
+from sympy import Symbol
 
 class Localization:
 
@@ -18,8 +19,8 @@ class Localization:
 
     def kalmanFilter(self, action, observation):
         # Prediction
-        B = [[self.delta_t * np.cos(self.state[2]), 0], [self.delta_t * np.sin(self.state[2]), 2], [0, self.delta_t]]
-        statePrediction = np.matmul(self.A, self.state) + np.matmul(B, action)
+        #B = [[self.delta_t * np.cos(self.state[2]), 0], [self.delta_t * np.sin(self.state[2]), 2], [0, self.delta_t]]
+        statePrediction = np.matmul(self.A, self.state) + np.matmul(self.B, action)
         covariancePrediction = np.matmul(np.matmul(self.A, self.covariance), np.transpose(self.A)) + self.R
         # Correction
         aux = np.matmul(np.matmul(self.C, statePrediction), np.transpose(self.C)) + self.Q
@@ -33,10 +34,28 @@ class Localization:
         self.state = newState
         self.covariance = newCovariance
 
-    def getObservationPose(self, x, y, theta, actionn):
-        xt = np.matmul(self.A, [x, y, theta]) + np.matmul(self.B, actionn) + self.R
-        z = np.matmul(self.C, xt) + self.Q
-        return z
+    def getObservationPose(self, closelandmarks, ranges, bearings):
+        estX=0
+        estY=0
+        estAngle=0
+        size= len(closelandmarks)
+
+        if size==3:
+            x1, y1= closelandmarks[0]
+            x2, y2 = closelandmarks[1]
+            x3, y3 = closelandmarks[2]
+            xx= Symbol('xx')
+            yy= Symbol('yy')
+
+            eq1=(xx-x1)**2+(yy-y1)**2-(ranges[0])**2-(xx-x3)**2-(yy-y3)**2+(ranges[2])**2
+            eq2=(xx-x2)**2+(yy-y2)**2-(ranges[1])**2-(xx-x3)**2-(yy-y3)**2+(ranges[2])**2
+            solutions= solve((eq1,eq2),(xx,yy))
+            estX=solutions[xx]
+            estY=solutions[yy]
+
+            estAngle=(math.atan2((y1-estY),(x1-estX))-bearings[0])
+
+        return [estX, estY, estAngle]
         # slide 20 in "19 ARS - Localization with Kalman Filter.pdf"
 
     def get_ellipse(self):

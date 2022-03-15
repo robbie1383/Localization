@@ -101,10 +101,13 @@ class Simulation:
         velocities = self.robot.move(movement, self.delta_t)
 
         # Update localization
-        z = self.localization.getObservationPose(self.robot.x, self.robot.y, self.robot.theta, velocities[0:2])
+        close=self.robot.get_close_landmarks(landmarks)
+        range= self.robot.getSensorRange(close)
+        bearing=self.robot.getBearing(close)
+        z = self.localization.getObservationPose(close,range,bearing)
         print("Real values", self.robot.x, self.robot.y, self.robot.theta)
-        print("z", z)
-        self.localization.kalmanFilter(velocities[0:2], z)
+        print("Estimated values", z)
+        #self.localization.kalmanFilter(velocities[0:2], z)
         return velocities
 
     def visualization_predict(self):

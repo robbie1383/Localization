@@ -18,8 +18,10 @@ class Robot:
         self.real_track = []
 
     def initPosition(self, wall):
-        x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
-        y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
+        #x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
+        #y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
+        x=500
+        y=600
         return x, y
 
     def move(self, movement, delta_t):
@@ -68,3 +70,17 @@ class Robot:
             if sensors_copy[i] < self.sensor_limit:
                 close_landmarks.append(landmarks[sensors.index(sensors_copy[i])])
         return close_landmarks
+
+    def getSensorRange(self, landmarks):
+        range=[]
+        for landmark in landmarks:
+            x,y= landmark
+            range.append(math.sqrt((self.x - x) ** 2 + (self.y - y) ** 2))
+        return range
+
+    def getBearing(self,landmarks):
+        bearing=[]
+        for landmark in landmarks:
+            x,y=landmark
+            bearing.append(math.atan2(y-self.y,x-self.x)-self.theta)
+        return bearing
