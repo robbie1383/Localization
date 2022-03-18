@@ -106,8 +106,8 @@ class Simulation:
         bearing = self.robot.getBearing(close)
         z = self.localization.getObservationPose(close, range, bearing)
         # z = [self.robot.x, self.robot.y, self.robot.theta]
-        # print("Real values", self.robot.x, self.robot.y, self.robot.theta)
-        # print("Estimated values", z)
+        print("Real values", self.robot.x, self.robot.y, self.robot.theta)
+        print("Estimated values", z)
         self.localization.kalmanFilter(velocities[0:2], z)
         return velocities
 

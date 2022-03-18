@@ -18,10 +18,8 @@ class Robot:
         self.real_track = []
 
     def initPosition(self, wall):
-        #x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
-        #y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
-        x=500
-        y=600
+        x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
+        y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
         return x, y
 
     def move(self, movement, delta_t):
