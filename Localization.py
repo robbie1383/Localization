@@ -17,6 +17,7 @@ class Localization:
         self.B = [[self.delta_t * np.cos(self.state[2]), 0], [self.delta_t * np.sin(self.state[2]), 2],
                   [0, self.delta_t]]
         self.predict_track = [(state[0], state[1])]
+        self.previousObservation= [0, 0, 0]
 
     def kalmanFilter(self, action, observation):
         # Prediction
@@ -55,8 +56,11 @@ class Localization:
             solutions = solve((eq1, eq2), (xx, yy))
             estX = solutions[xx]
             estY = solutions[yy]
-
             estAngle = (math.atan2((y1 - estY), (x1 - estX)) - bearings[0])
+
+            self.previousObservation=[estX, estY, estAngle]
+        else:
+            estX, estY, estAngle= self.previousObservation
         return [estX, estY, estAngle]
         # slide 20 in "19 ARS - Localization with Kalman Filter.pdf"
 
