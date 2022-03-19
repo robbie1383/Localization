@@ -15,8 +15,8 @@ DARKGRAY = (125, 130, 138)
 PURPLE = (114, 85, 163)
 LIGHTPURPLE = (185, 167, 217)
 
-landmarks = [(SEV, SEV), (WIDTH - SEV, SEV),
-             (SEV, SEV + 200), (WIDTH - SEV - 200, SEV + 200),
+landmarks = [(SEV, SEV), (WIDTH - SEV, SEV), (WIDTH - SEV, SEV + 100), (SEV + 500, SEV),
+             (SEV, SEV + 200), (WIDTH - SEV - 400, SEV + 200),
              (SEV + 200, SEV + 400), (WIDTH - SEV, SEV + 400),
              (SEV + 200, HEIGHT - SEV - 150), (WIDTH - SEV - 200, HEIGHT - SEV - 250),
              (WIDTH - SEV - 200, HEIGHT - SEV), (SEV, HEIGHT - SEV), (WIDTH - SEV, HEIGHT - SEV),
@@ -41,7 +41,7 @@ class Simulation:
 
     def __init__(self):
         pygame.init()
-        self.delta_t = 0.1
+        self.delta_t = 0.2
         self.walls = walls
         self.robot = Robot(self.walls, 70)
         self.screen = pygame.display.set_mode((WIDTH + 150, HEIGHT))
@@ -51,6 +51,7 @@ class Simulation:
         self.localization = Localization(self.delta_t, [self.robot.x, self.robot.y, self.robot.theta])
         self.clock = pygame.time.Clock()
         self.history_ellipse = []
+        self.track = []
 
     def show(self, velocities):
         self.screen.fill(WHITE)
@@ -69,7 +70,8 @@ class Simulation:
         for close_landmark in close_landmarks:
             pygame.draw.line(self.screen, GREEN, close_landmark, (self.robot.x, self.robot.y), 1)
         if len(self.robot.real_track) > 1:
-            pygame.draw.aalines(self.screen, DARKGRAY, False, self.robot.real_track, 50)
+            pygame.draw.aalines(self.screen, BLACK, False, self.robot.real_track, 50)
+
         # Display velocities
         left = "v = " + str(np.round(velocities[0], 2))
         self.screen.blit(self.font.render(left, 105, BLACK), (WIDTH + 10, HEIGHT / 2 - 305))
@@ -78,13 +80,17 @@ class Simulation:
         theta = "θ = " + str(np.round(velocities[2] % 360, 2)) + "°"
         self.screen.blit(self.font.render(theta, 105, BLACK), (WIDTH + 10, HEIGHT / 2 - 205))
         # Visualization ellipse and predicted tracks
-        self.visualization_predict()
+        # self.visualization_predict()
+        if len(self.localization.ellipse_location) > 1:
+            pygame.draw.aalines(self.screen, DARKGRAY, False, self.localization.predict_track, 50)
+        for i in range(len(self.localization.history_ellipses)):
+            self.visualization_predict(self.localization.history_ellipses[i], self.localization.ellipse_location[i])
 
         pygame.display.flip()
 
     def run(self):
         while self.running:
-            self.clock.tick(10)
+            self.clock.tick(5)
             velocities = self.update()
             self.show(velocities)
 
@@ -104,34 +110,22 @@ class Simulation:
         close = self.robot.get_close_landmarks(landmarks)
         range = self.robot.getSensorRange(close)
         bearing = self.robot.getBearing(close)
-        z = self.localization.getObservationPose(close, range, bearing)
-        # z = [self.robot.x, self.robot.y, self.robot.theta]
-        print("Real values", self.robot.x, self.robot.y, self.robot.theta)
-        print("Estimated values", z)
-        self.localization.kalmanFilter(velocities[0:2], z)
+        z, observation = self.localization.getObservationPose(close, range, bearing)
+        self.localization.kalmanFilter(velocities[0:2], z, observation)
         return velocities
 
-    def visualization_predict(self):
+    def visualization_predict(self, ellipse, location):
         # https://cookierobotics.com/007/
-        ellipse, location = self.localization.get_ellipse()
-        predict_track = self.localization.predict_track
         width, height, angle = ellipse
         x, y = location
         # init an transparent surface
-        surface = pygame.Surface((600, 600), pygame.SRCALPHA)
+        surface = pygame.Surface((100, 100), pygame.SRCALPHA)
         # draw ellipse on transparent surface,make sure the ellipse locate in the center of the surface
-        pygame.draw.ellipse(surface, GREEN, (300 - width / 2, 300 - height / 2, width * 10, height * 10), 3)
+        pygame.draw.ellipse(surface, GREEN, (50 - width * 10 / 2, 50 - height * 10 / 2, width * 10, height * 10), 1)
         # rotate the  ellipse by rotating the whole surface
         surface2 = pygame.transform.rotate(surface, angle)
-        self.history_ellipse.append(surface2)
-        # get the ellipse location on surface
-        for sur in self.history_ellipse:
-            rcx, rcy = sur.get_rect().center
-            # show ellipse and adjust the location to the track
-            # self.screen.blit(sur, (self.robot.x - rcx, self.robot.y - rcy))
-            self.screen.blit(surface2, (x - rcx, y - rcy))
-        if len(predict_track) > 1:
-            pygame.draw.aalines(self.screen, DARKGRAY, False, predict_track, 50)
+        rcx, rcy = surface2.get_rect().center
+        self.screen.blit(surface2, (x - rcx, y - rcy))
 
     def stop(self):
         self.running = False

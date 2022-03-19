@@ -14,33 +14,39 @@ class Robot:
         self.w = 0
         self.theta = 0
         self.speed = 1
-        self.sensor_limit = 200
+        self.sensor_limit = 220
         self.real_track = []
 
     def initPosition(self, wall):
-        x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
-        y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
+        # x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
+        # y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
+        x = 100
+        y = 100
         return x, y
 
     def move(self, movement, delta_t):
         # Check keys for movement
         # movement = [w, s, a, d, x]
+        delta_w = 0
         if movement[0] == 1:
             self.v += self.speed
         if movement[1] == 1:
             self.v -= self.speed
         if movement[2] == 1:
-            self.w += 0.01
+            self.w += 0.1
+            delta_w = 0.1
         if movement[3] == 1:
-            self.w -= 0.01
+            self.w -= 0.1
+            delta_w = -0.1
         if movement[4] == 1:
             self.v = 0
             self.w = 0
+            delta_w = 0
 
         # If it's moving
         if self.v != 0 or self.w != 0:
             result = [self.x, self.y, self.theta] + np.matmul(
-                [[delta_t * np.cos(self.theta), 0], [delta_t * np.sin(self.theta), 2], [0, delta_t]], [self.v, self.w])
+                [[delta_t * np.cos(self.theta), 0], [delta_t * np.sin(self.theta), 0], [0, delta_t]], [self.v, self.w])
             next_x, next_y, new_theta = result[0], result[1], result[2]
             # Transfer results from the ICC computation
             self.x = next_x
@@ -48,7 +54,7 @@ class Robot:
             self.theta = new_theta
             self.frontX, self.frontY = self.rotate(self.theta, self.radius)
         self.real_track.append((self.x, self.y))
-        return self.v, self.w, np.round(np.degrees(self.theta), 2)
+        return self.v, delta_w, np.round(np.degrees(self.theta), 2)
 
     def rotate(self, angle, r):
         # Rotate the robot at a certain angle from the x-axis
@@ -70,15 +76,15 @@ class Robot:
         return close_landmarks
 
     def getSensorRange(self, landmarks):
-        range=[]
+        range = []
         for landmark in landmarks:
-            x,y= landmark
+            x, y = landmark
             range.append(math.sqrt((self.x - x) ** 2 + (self.y - y) ** 2))
         return range
 
-    def getBearing(self,landmarks):
-        bearing=[]
+    def getBearing(self, landmarks):
+        bearing = []
         for landmark in landmarks:
-            x,y=landmark
-            bearing.append(math.atan2(y-self.y,x-self.x)-self.theta)
+            x, y = landmark
+            bearing.append(math.atan2(y - self.y, x - self.x) - self.theta)
         return bearing
