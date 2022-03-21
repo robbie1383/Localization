@@ -1,13 +1,12 @@
 import math
-import random
 import numpy as np
 
 
 class Robot:
 
-    def __init__(self, wall, size):
+    def __init__(self, size):
         self.radius = int(size / 2)
-        self.x, self.y = self.initPosition(wall[0])
+        self.x = self.y = 100
         self.frontX = self.x + self.radius
         self.frontY = self.y
         self.v = 0
@@ -16,13 +15,6 @@ class Robot:
         self.speed = 1
         self.sensor_limit = 220
         self.real_track = []
-
-    def initPosition(self, wall):
-        # x = random.randint(wall[0][0] + self.radius, wall[2][0] - self.radius)
-        # y = random.randint(wall[0][1] + self.radius, wall[2][1] - self.radius)
-        x = 100
-        y = 100
-        return x, y
 
     def move(self, movement, delta_t):
         # Check keys for movement

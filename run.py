@@ -43,7 +43,7 @@ class Simulation:
         pygame.init()
         self.delta_t = 0.2
         self.walls = walls
-        self.robot = Robot(self.walls, 70)
+        self.robot = Robot(70)
         self.screen = pygame.display.set_mode((WIDTH + 150, HEIGHT))
         pygame.display.set_caption("Modular Robot Simulator")
         self.font = pygame.font.SysFont("Pokemon GB.ttf", 50)

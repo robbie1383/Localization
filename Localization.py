@@ -30,14 +30,16 @@ class Localization:
         self.B = [[self.delta_t * np.cos(self.state[2]), 0],
                   [self.delta_t * np.sin(self.state[2]), 0],
                   [0, self.delta_t]]
-        # B = [[self.delta_t * np.cos(self.state[2]), 0], [self.delta_t * np.sin(self.state[2]), 2], [0, self.delta_t]]
+
         statePrediction = np.matmul(self.A, self.state) + np.matmul(self.B, action)
         covariancePrediction = np.matmul(np.matmul(self.A, self.covariance), np.transpose(self.A)) + self.R
+
         # Correction
         aux = np.matmul(np.matmul(self.C, covariancePrediction), np.transpose(self.C)) + self.Q
         K = np.matmul(np.matmul(covariancePrediction, np.transpose(self.C)), np.linalg.pinv(aux.astype(float)))
         newState = statePrediction + np.matmul(K, (observation - np.matmul(self.C, statePrediction)))
         newCovariance = np.matmul(np.identity(3) - np.matmul(K, self.C), covariancePrediction)
+
         # Update
         # If three landmarks close, then use correction function
         if have_observation:
@@ -77,10 +79,7 @@ class Localization:
             estY = solutions[yy]
             estAngle = (math.atan2((y1 - estY), (x1 - estX)) - bearings[0])
             self.previousObservation = [estX, estY, estAngle]
-        # else:
-        #     estX, estY, estAngle = self.previousObservation
         return [estX, estY, estAngle], observation
-        # slide 20 in "19 ARS - Localization with Kalman Filter.pdf"
 
     def get_ellipse(self):
         a = self.covariance[0][0]
